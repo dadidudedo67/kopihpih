@@ -84,26 +84,26 @@
 
       <div class="form-container" x-show="$store.cart.items.length">
         <form action="" id="checkout-form">
-          <input type="hidden" name="items" x-model="JSON.stringify($store.cart.items)">
-          <input type="hidden" name="total" x-model="$store.cart.total">
+          <input type="hidden" name="items" :value="JSON.stringify($store.cart.items)">
+          <input type="hidden" name="total" :value="$store.cart.total">
           <h5>Customer Detail</h5>
 
           <label for="name">
             <span>Name</span>
-            <input type="text" name="name" id="name" autocomplete="off">
+            <input type="text" name="name" id="name" autocomplete="off" required>
           </label>
 
           <label for="email">
             <span>Email</span>
-            <input type="email" name="email" id="email" autocomplete="off">
+            <input type="email" name="email" id="email" autocomplete="off" required>
           </label>
 
           <label for="phone">
             <span>Phone</span>
-            <input type="number" name="phone" id="phone" autocomplete="off">
+            <input type="number" name="phone" id="phone" autocomplete="off" required>
           </label>
 
-          <button class="checkout-button disabled" type="submit" id="checkout-button" value="checkout">Checkout</button>
+          <button class="checkout-button" type="submit" id="checkout-button" value="checkout">Checkout</button>
         </form>
       </div>
     </div>
@@ -317,6 +317,51 @@
 
   <!-- My Javascript -->
   <script src="js/script.js"></script>
+
+  <!-- Checkout to WhatsApp -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const checkoutForm = document.querySelector('#checkout-form');
+      if (!checkoutForm) return;
+
+      checkoutForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(checkoutForm);
+        const data = Object.fromEntries(formData);
+
+        let items = [];
+        try {
+          items = JSON.parse(data.items || '[]');
+        } catch (err) {
+          items = [];
+        }
+
+        const total = Number(data.total || 0);
+
+        let daftarPesanan = '';
+        items.forEach((item, index) => {
+          const itemTotal = Number(item.total || (Number(item.price || 0) * Number(item.quantity || 1)));
+          daftarPesanan += `${index + 1}. ${item.name} (${item.quantity}x) - Rp ${itemTotal.toLocaleString('id-ID')}\n`;
+        });
+
+        const pesan =
+          `Halo *Kopi Kenangan Senja*, saya mau pesan:\n\n` +
+          `*Data Pembeli:*\n` +
+          `Nama: ${data.name}\n` +
+          `Email: ${data.email}\n` +
+          `No. HP: ${data.phone}\n\n` +
+          `*Detail Pesanan:*\n` +
+          `${daftarPesanan || '-'}\n` +
+          `*Total Pembayaran: Rp ${total.toLocaleString('id-ID')}*`;
+
+        const nomorWA = '6288905682258';
+        const urlWA = `https://wa.me/${nomorWA}?text=${encodeURIComponent(pesan)}`;
+
+        window.open(urlWA, '_blank');
+      });
+    });
+  </script>
 </body>
 
 </html>
